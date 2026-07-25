@@ -44,7 +44,7 @@ input,select{width:100%;padding:13px;margin-top:6px;border:1px solid var(--line)
 .section-title{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}
 .section-title h2,.section-title h3{margin:0}
 .pill{display:inline-flex;align-items:center;border-radius:999px;padding:7px 10px;background:#e7efe9;color:var(--green);font-size:12px;font-weight:900}
-.event-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.event-type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .type-card{border:2px solid var(--line);border-radius:15px;padding:16px;cursor:pointer;background:white}
 .type-card.active{border-color:var(--green2);background:#f0f8f3}
 .type-card h3{margin:0 0 5px}.type-card p{margin:0;color:var(--muted);font-size:13px}
@@ -121,6 +121,10 @@ footer{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px sol
           <h3>⛳ Course Tournament</h3>
           <p>Up to 36 teams of four with a live best-ball leaderboard.</p>
         </div>
+        <div class="type-card" data-type="casual">
+          <h3>🏌️ Casual Round</h3>
+          <p>1–20 golfers with stroke play or Stableford scoring.</p>
+        </div>
       </div>
       <input id="eventType" type="hidden" value="ryder">
     </div>
@@ -147,6 +151,35 @@ footer{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px sol
         </div>
         <div class="notice">Course Tournament supports up to 36 teams of four. The leaderboard ranks teams by the lowest cumulative counting score.</div>
       </div>
+      <div id="casualSettings" class="hidden">
+        <div class="grid2">
+          <label>Number of golfers<select id="casualPlayerCount"></select></label>
+          <label>Scoring format<select id="casualFormat">
+            <option value="stroke">Stroke Play</option>
+            <option value="stableford">Stableford</option>
+          </select></label>
+        </div>
+        <div class="notice">Casual Round currently supports individual Stroke Play and Stableford. More casual games will be added without changing your saved courses or players.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><h2>Course Setup</h2><span class="pill">Par & Handicap</span></div>
+      <div class="grid2">
+        <label>Tee name<input id="teeName" maxlength="40" placeholder="White Tees"></label>
+        <label>Load saved course<select id="savedCourseSelect"><option value="">New course setup</option></select></label>
+      </div>
+      <div class="section-title">
+        <h3>Hole-by-hole details</h3>
+        <button id="saveCourseBtn" type="button" class="secondary">Save Course</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Hole</th><th>Par</th><th>Handicap</th></tr></thead>
+          <tbody id="courseHolesBody"></tbody>
+        </table>
+      </div>
+      <div id="courseValidation" class="small"></div>
     </div>
 
     <div class="card">
@@ -232,7 +265,7 @@ const firebaseConfig={
 const $=id=>document.getElementById(id);
 const clone=x=>JSON.parse(JSON.stringify(x));
 let db=null,F=null,currentEvent=null,currentCode=null,unsubscribe=null;
-let draftTeams=[];
+let draftTeams=[];let draftCourse=[];
 
 const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
 function toast(msg){$("toast").textContent=msg;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),2000)}
@@ -247,7 +280,45 @@ function buildSelects(){
   $("ryderTeamCount").innerHTML=[2,3,4].map(n=>`<option value="${n}">${n} teams</option>`).join("");
   $("ryderPlayers").innerHTML=Array.from({length:12},(_,i)=>i+1).map(n=>`<option value="${n}" ${n===3?"selected":""}>${n}</option>`).join("");
   $("tournamentTeamCount").innerHTML=Array.from({length:36},(_,i)=>i+1).map(n=>`<option value="${n}" ${n===12?"selected":""}>${n} teams</option>`).join("");
+  $("casualPlayerCount").innerHTML=Array.from({length:20},(_,i)=>i+1).map(n=>`<option value="${n}" ${n===4?"selected":""}>${n} golfer${n===1?"":"s"}</option>`).join("");
   $("scoreHole").innerHTML=Array.from({length:36},(_,i)=>`<option value="${i+1}">Hole ${i+1}</option>`).join("");
+  refreshSavedCourses();
+}
+function defaultCourse(holes){
+  return Array.from({length:holes},(_,i)=>({hole:i+1,par:4,handicap:(i%18)+1}));
+}
+function syncCourse(){
+  const holes=+$("holes").value;
+  if(!draftCourse.length)draftCourse=defaultCourse(holes);
+  while(draftCourse.length<holes)draftCourse.push({hole:draftCourse.length+1,par:4,handicap:(draftCourse.length%18)+1});
+  draftCourse=draftCourse.slice(0,holes).map((h,i)=>({...h,hole:i+1}));
+  renderCourseBuilder();
+}
+function renderCourseBuilder(){
+  $("courseHolesBody").innerHTML=draftCourse.map((h,i)=>`<tr>
+    <td>${h.hole}</td>
+    <td><select class="course-par" data-i="${i}">${[3,4,5,6].map(n=>`<option value="${n}" ${n===+h.par?"selected":""}>${n}</option>`).join("")}</select></td>
+    <td><select class="course-hcp" data-i="${i}">${Array.from({length:18},(_,k)=>k+1).map(n=>`<option value="${n}" ${n===+h.handicap?"selected":""}>${n}</option>`).join("")}</select></td>
+  </tr>`).join("");
+  document.querySelectorAll(".course-par").forEach(el=>el.onchange=()=>{draftCourse[+el.dataset.i].par=+el.value;validateCourse()});
+  document.querySelectorAll(".course-hcp").forEach(el=>el.onchange=()=>{draftCourse[+el.dataset.i].handicap=+el.value;validateCourse()});
+  validateCourse();
+}
+function validateCourse(){
+  const holes=+$("holes").value;
+  let valid=true,msg="";
+  const blocks=holes===36?[[0,18],[18,36]]:[[0,holes]];
+  for(const [a,b] of blocks){
+    const vals=draftCourse.slice(a,b).map(h=>+h.handicap);
+    if(new Set(vals).size!==vals.length){valid=false;msg="Each handicap number must be unique within each 9- or 18-hole set.";break}
+  }
+  $("courseValidation").textContent=valid?"Course setup looks good.":msg;
+  $("courseValidation").style.color=valid?"#145c32":"#b42318";
+  return valid;
+}
+function refreshSavedCourses(){
+  const courses=JSON.parse(localStorage.getItem("ttgl_courses")||"[]");
+  $("savedCourseSelect").innerHTML=`<option value="">New course setup</option>`+courses.map((c,i)=>`<option value="${i}">${esc(c.course)} — ${esc(c.tee||"Unnamed tees")}</option>`).join("");
 }
 function defaultTeam(i,count){
   const names=["Red Team","Blue Team","Green Team","Gold Team"];
@@ -255,13 +326,14 @@ function defaultTeam(i,count){
 }
 function syncDraftTeams(){
   const type=$("eventType").value;
-  const count=type==="ryder"?+$("ryderTeamCount").value:+$("tournamentTeamCount").value;
-  const players=type==="ryder"?+$("ryderPlayers").value:4;
+  const count=type==="ryder"?+$("ryderTeamCount").value:type==="tournament"?+$("tournamentTeamCount").value:1;
+  const players=type==="ryder"?+$("ryderPlayers").value:type==="tournament"?4:+$("casualPlayerCount").value;
   while(draftTeams.length<count)draftTeams.push(defaultTeam(draftTeams.length,players));
   draftTeams=draftTeams.slice(0,count);
   draftTeams.forEach((t,i)=>{
-    const target=type==="tournament"?4:(t.playerCount||players);
-    if(type==="tournament")t.playerCount=4;
+    const target=type==="tournament"?4:type==="casual"?players:(t.playerCount||players);
+    if(type!=="ryder")t.playerCount=target;
+    if(type==="casual")t.name="Golfers";
     while(t.players.length<target)t.players.push({id:`p${i+1}_${t.players.length+1}`,name:""});
     t.players=t.players.slice(0,target);
   });
@@ -272,15 +344,15 @@ function renderTeamBuilder(){
   $("teamLimit").textContent=`${draftTeams.length} team${draftTeams.length===1?"":"s"}`;
   $("teamBuilder").innerHTML=draftTeams.map((t,i)=>`
     <div class="team-card" data-team="${i}">
-      <div class="team-header">
+      <div class="team-header" ${type==="casual"?"style=\"display:none\"":""}>
         <label>Team name<input class="team-name" data-i="${i}" value="${esc(t.name)}" maxlength="40" required></label>
-        <label>Players<select class="player-count" data-i="${i}" ${type==="tournament"?"disabled":""}>
+        <label>Players<select class="player-count" data-i="${i}" ${type!=="ryder"?"disabled":""}>
           ${Array.from({length:12},(_,k)=>k+1).map(n=>`<option value="${n}" ${n===t.playerCount?"selected":""}>${n}</option>`).join("")}
         </select></label>
-        <button type="button" class="icon-btn remove-team" data-i="${i}" title="Remove team" ${type==="ryder"&&draftTeams.length<=2?"disabled":type==="tournament"&&draftTeams.length<=1?"disabled":""}>×</button>
+        <button type="button" class="icon-btn remove-team" data-i="${i}" title="Remove team" ${type==="casual"?"disabled":type==="ryder"&&draftTeams.length<=2?"disabled":type==="tournament"&&draftTeams.length<=1?"disabled":""}>×</button>
       </div>
       <div class="players">
-        ${t.players.map((p,j)=>`<label>Player name<input class="player-name" data-i="${i}" data-j="${j}" value="${esc(p.name)}" placeholder="Enter name" maxlength="40" required></label>`).join("")}
+        ${t.players.map((p,j)=>`<label>${type==="casual"?"Golfer name":"Player name"}<input class="player-name" data-i="${i}" data-j="${j}" value="${esc(p.name)}" placeholder="Enter name" maxlength="40" required></label>`).join("")}
       </div>
     </div>`).join("");
 
@@ -300,9 +372,10 @@ function selectType(type){
   document.querySelectorAll(".type-card").forEach(x=>x.classList.toggle("active",x.dataset.type===type));
   $("ryderSettings").classList.toggle("hidden",type!=="ryder");
   $("tournamentSettings").classList.toggle("hidden",type!=="tournament");
-  $("holes").querySelector('option[value="36"]').disabled=type==="ryder";
-  if(type==="ryder"&&+$("holes").value===36)$("holes").value=18;
-  draftTeams=[];syncDraftTeams();
+  $("casualSettings").classList.toggle("hidden",type!=="casual");
+  $("holes").querySelector('option[value="36"]').disabled=type==="ryder"||type==="casual";
+  if((type==="ryder"||type==="casual")&&+$("holes").value===36)$("holes").value=18;
+  draftTeams=[];syncDraftTeams();syncCourse();
 }
 
 async function connect(){
@@ -336,7 +409,10 @@ async function createEvent(){
     holes:+$("holes").value,
     settings:type==="ryder"
       ?{mode:"multiTeamRyder",segments:[{from:1,to:6,count:1},{from:7,to:12,count:2},{from:13,to:+$("holes").value,count:"all"}]}
-      :{mode:"bestBall",count:+$("bestBallCount").value},
+      :type==="tournament"
+        ?{mode:"bestBall",count:+$("bestBallCount").value}
+        :{mode:$("casualFormat").value},
+    courseSetup:{tee:$("teeName").value.trim(),holes:clone(draftCourse)},
     teams:cleanTeams,
     scores:{},
     createdAt:new Date().toISOString(),
@@ -357,6 +433,7 @@ async function openEvent(code){
 }
 function countingNumber(event,hole){
   if(event.type==="tournament")return event.settings.count;
+  if(event.type==="casual")return 1;
   const seg=event.settings.segments.find(s=>hole>=s.from&&hole<=s.to);
   return seg?.count==="all"?"all":(seg?.count||1);
 }
@@ -400,7 +477,7 @@ function renderEvent(){
   $("eventCodePill").textContent=e.code;
   $("liveEventName").textContent=e.name;
   $("liveCourse").textContent=`${e.course} · ${formatDate(e.date)}`;
-  $("eventMeta").textContent=`${e.type==="ryder"?"Ryder Cup":"Course Tournament"} · ${e.teams.length} teams · ${e.holes} holes`;
+  $("eventMeta").textContent=`${e.type==="ryder"?"Ryder Cup":e.type==="tournament"?"Course Tournament":"Casual Round"} · ${e.type==="casual"?e.teams[0].players.length+" golfers":e.teams.length+" teams"} · ${e.holes} holes${e.courseSetup?.tee?" · "+e.courseSetup.tee:""}`;
   $("headerSub").textContent=e.name;
   $("scoreHole").innerHTML=Array.from({length:e.holes},(_,i)=>`<option value="${i+1}">Hole ${i+1}</option>`).join("");
   $("scoreTeam").innerHTML=e.teams.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join("");
@@ -414,7 +491,9 @@ function renderScorePlayers(){
   const count=countingNumber(currentEvent,hole);
   $("scoreFormat").textContent=currentEvent.type==="tournament"
     ?`Best ${count} score${count===1?"":"s"}`
-    :(count==="all"?"All scores count":`Best ${count}`);
+    :currentEvent.type==="casual"
+      ?(currentEvent.settings.mode==="stableford"?"Stableford":"Stroke Play")
+      :(count==="all"?"All scores count":`Best ${count}`);
   $("scorePlayers").innerHTML=team.players.map((p,i)=>`
     <div class="score-player"><strong>${esc(p.name)}</strong>
       <input id="score_${i}" type="number" inputmode="numeric" min="1" max="20" value="${entry?.scores?.[i]??""}" required>
@@ -425,6 +504,30 @@ function renderRosters(){
   $("rosterDisplay").innerHTML=currentEvent.teams.map(t=>`
     <div class="card"><div class="section-title"><h3>${esc(t.name)}</h3><span class="pill">${t.players.length} players</span></div>
     <div class="grid3">${t.players.map(p=>`<div>${esc(p.name)}</div>`).join("")}</div></div>`).join("");
+}
+function stablefordPoints(score,par){
+  const diff=score-par;
+  if(diff<=-3)return 5;
+  if(diff===-2)return 4;
+  if(diff===-1)return 3;
+  if(diff===0)return 2;
+  if(diff===1)return 1;
+  return 0;
+}
+function casualTotals(){
+  const team=currentEvent.teams[0];
+  return team.players.map((p,i)=>{
+    let gross=0,points=0,complete=0;
+    for(let h=1;h<=currentEvent.holes;h++){
+      const e=teamHole(team.id,h);
+      const score=e?.scores?.[i];
+      if(!score)continue;
+      complete++;gross+=+score;
+      const par=currentEvent.courseSetup?.holes?.[h-1]?.par||4;
+      points+=stablefordPoints(+score,+par);
+    }
+    return {player:p,gross,points,complete};
+  }).sort((a,b)=>currentEvent.settings.mode==="stableford"?(b.points-a.points||a.gross-b.gross):(b.complete-a.complete||a.gross-b.gross));
 }
 function renderLeaderboard(){
   if(currentEvent.type==="ryder"){
@@ -438,11 +541,16 @@ function renderLeaderboard(){
       const win=r.complete?r.winners.map(id=>esc(currentEvent.teams.find(t=>t.id===id).name)).join(" / "):"Waiting";
       return `<tr><td>${h}</td><td>${count==="all"?"All":`Best ${count}`}</td>${r.rows.map(x=>`<td>${x.total??"—"}</td>`).join("")}<td>${win}</td></tr>`;
     }).join("");
-  }else{
+  }else if(currentEvent.type==="tournament"){
     const rows=tournamentTotals();
     $("leaderboardSummary").innerHTML=`<div class="status-box">${rows.filter(r=>r.complete===currentEvent.holes).length} teams finished · Best ${currentEvent.settings.count} score${currentEvent.settings.count===1?"":"s"} count per hole</div>`;
     $("leaderHead").innerHTML="<tr><th>Place</th><th>Team</th><th>Holes</th><th>Total</th></tr>";
     $("leaderBody").innerHTML=rows.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.team.name)}</td><td>${r.complete}</td><td>${r.complete?r.total:"—"}</td></tr>`).join("");
+  }else{
+    const rows=casualTotals(),stable=currentEvent.settings.mode==="stableford";
+    $("leaderboardSummary").innerHTML=`<div class="status-box">${stable?"Stableford points":"Gross stroke play"} · ${currentEvent.holes} holes</div>`;
+    $("leaderHead").innerHTML=`<tr><th>Place</th><th>Golfer</th><th>Holes</th><th>${stable?"Points":"Gross"}</th></tr>`;
+    $("leaderBody").innerHTML=rows.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.player.name)}</td><td>${r.complete}</td><td>${stable?r.points:(r.complete?r.gross:"—")}</td></tr>`).join("");
   }
 }
 function renderProgress(){
@@ -459,10 +567,32 @@ document.querySelectorAll(".type-card").forEach(c=>c.onclick=()=>selectType(c.da
 $("ryderTeamCount").onchange=syncDraftTeams;
 $("ryderPlayers").onchange=()=>{draftTeams.forEach(t=>{t.playerCount=+$("ryderPlayers").value});syncDraftTeams()};
 $("tournamentTeamCount").onchange=syncDraftTeams;
+$("casualPlayerCount").onchange=syncDraftTeams;
+$("holes").onchange=syncCourse;
+$("saveCourseBtn").onclick=()=>{
+  if(!validateCourse())return toast("Fix the course handicap setup first");
+  const course=$("courseName").value.trim();
+  if(!course)return toast("Enter the course name first");
+  const courses=JSON.parse(localStorage.getItem("ttgl_courses")||"[]");
+  const item={course,tee:$("teeName").value.trim(),holes:clone(draftCourse)};
+  const idx=courses.findIndex(c=>c.course.toLowerCase()===course.toLowerCase()&&(c.tee||"").toLowerCase()===(item.tee||"").toLowerCase());
+  if(idx>=0)courses[idx]=item;else courses.push(item);
+  localStorage.setItem("ttgl_courses",JSON.stringify(courses));
+  refreshSavedCourses();toast("Course saved on this device");
+};
+$("savedCourseSelect").onchange=()=>{
+  const i=$("savedCourseSelect").value;
+  if(i==="")return;
+  const c=JSON.parse(localStorage.getItem("ttgl_courses")||"[]")[+i];
+  if(!c)return;
+  $("courseName").value=c.course;$("teeName").value=c.tee||"";
+  $("holes").value=String(c.holes.length);draftCourse=clone(c.holes);syncCourse();toast("Saved course loaded");
+};
 $("joinForm").onsubmit=e=>{e.preventDefault();const c=$("joinCode").value.trim().toUpperCase();if(c){setQuery(c);openEvent(c)}};
 $("createForm").onsubmit=async e=>{
   e.preventDefault();
   if(!db)return toast("Firebase is not connected yet");
+  if(!validateCourse())return toast("Fix the course handicap setup");
   if(draftTeams.some(t=>!t.name.trim()||t.players.some(p=>!p.name.trim())))return toast("Enter every team and player name");
   try{await createEvent()}catch(err){console.error(err);toast("Event creation failed")}
 };
@@ -497,7 +627,7 @@ $("resetScores").onclick=async()=>{
 };
 window.addEventListener("popstate",()=>{const c=new URL(location.href).searchParams.get("event");c?openEvent(c.toUpperCase()):show("homeView")});
 
-buildSelects();selectType("ryder");connect();
+buildSelects();selectType("ryder");syncCourse();connect();
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
 </body>
