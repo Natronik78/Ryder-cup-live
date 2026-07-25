@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#123b72"><meta name="apple-mobile-web-app-capable" content="yes">
+<title>Tees to Green Live</title>
+<style>:root{--navy:#123b72;--blue:#245ca6;--red:#b4232f;--bg:#f4f7fb;--line:#dce3ec;--muted:#667085}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#182230}header{padding:24px max(18px,env(safe-area-inset-left));background:linear-gradient(135deg,#0e315f,#2462ac);color:#fff}header h1{margin:3px 0;font-size:28px}header p{margin:0;opacity:.85}header small{font-weight:900;letter-spacing:.12em}main{max-width:900px;margin:auto;padding:16px}.score{display:grid;grid-template-columns:1fr 1.25fr 1fr;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 7px 24px #102b4b1a}.score>div{padding:16px;text-align:center}.red,.blue{color:#fff}.red{background:var(--red)}.blue{background:var(--navy)}.score span{display:block;font-size:13px;font-weight:900}.score b{font-size:35px}.status{display:flex;flex-direction:column;justify-content:center}.status small{color:var(--muted);margin-top:4px}nav{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:16px 0}button{border:0;border-radius:11px;padding:13px;font-weight:900;cursor:pointer}nav button{background:#e5ebf2}nav .active,.primary{background:var(--blue);color:#fff}.panel{background:#fff;padding:17px;border-radius:18px;box-shadow:0 7px 24px #102b4b14}.hidden{display:none!important}.grid2,.grid3{display:grid;gap:12px}.grid2{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:repeat(3,1fr)}label{display:block;font-size:13px;font-weight:800;margin-bottom:13px;color:#344054}input,select{width:100%;padding:13px;margin-top:6px;border:1px solid var(--line);border-radius:11px;background:#fff;font:inherit}.format{display:flex;align-items:center;gap:12px;padding:13px;background:#edf4ff;border-radius:12px;margin-bottom:14px}.format strong{margin-left:auto}.format small{color:#9a6700}.check{display:flex;align-items:center;gap:8px}.check input{width:auto;margin:0}.primary,.danger{width:100%}.danger{margin-top:10px;background:#fee4e2;color:#912018}.hint,.mode{font-size:12px;color:var(--muted);text-align:center}.mode strong,.mode span{display:block}.table{overflow:auto}table{width:100%;border-collapse:collapse;min-width:580px}th,td{padding:10px 7px;border-bottom:1px solid var(--line);text-align:center;font-size:13px}th{background:#eef3f9}#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#101828;color:#fff;padding:11px 17px;border-radius:10px;opacity:0;z-index:10;transition:.2s}#toast.show{opacity:1}
+@media(max-width:650px){header h1{font-size:23px}.score>div{padding:13px 5px}.score b{font-size:29px}.grid2,.grid3{grid-template-columns:1fr}.panel{padding:14px}nav button{font-size:12px;padding:12px 3px}}</style></head>
+<body>
+<div id="toast"></div>
+<header><div><small>EVERY ROUND. EVERY HOLE. LIVE.</small><h1 id="event">Tees to Green Live</h1><p id="course">Loading…</p></div></header>
+<main>
+<section class="score"><div class="red"><span id="t1n">Red Team</span><b id="t1">0</b></div><div class="status"><strong id="status">Match tied</strong><small id="complete">0 holes complete</small></div><div class="blue"><span id="t2n">Blue Team</span><b id="t2">0</b></div></section>
+<nav><button class="active" data-view="entry">Enter Score</button><button data-view="live">Live Match</button><button data-view="setup">Setup</button></nav>
+<section id="entry" class="panel view">
+<form id="scoreForm">
+<div class="grid2"><label>Team<select id="team"></select></label><label>Hole<select id="hole"></select></label></div>
+<div class="format"><span>Format</span><strong id="format">Best 1</strong><small id="points">1 point</small></div>
+<div id="players" class="grid3"></div>
+<label class="check"><input id="challenge" type="checkbox"> Captain's Challenge</label>
+<label>Submitted by<input id="by" maxlength="40" placeholder="Your name" required></label>
+<button class="primary">Save Hole Score</button><p class="hint">Submitting the same team and hole again replaces the earlier score.</p>
+</form></section>
+<section id="live" class="panel view hidden"><div class="table"><table><thead><tr><th>Hole</th><th>Format</th><th id="rh">Red</th><th id="bh">Blue</th><th>Winner</th><th>Pts</th></tr></thead><tbody id="rows"></tbody></table></div></section>
+<section id="setup" class="panel view hidden"><form id="setupForm">
+<label>Event name<input id="sevent" required></label><label>Course<input id="scourse" required></label>
+<div class="grid2"><label>Team 1<input id="steam1" required></label><label>Team 2<input id="steam2" required></label></div>
+<div class="grid2"><div id="sp1"></div><div id="sp2"></div></div>
+<label class="check"><input id="schallenge" type="checkbox"> Enable Captain's Challenge</label>
+<button class="primary">Save Match Setup</button><button id="reset" class="danger" type="button">Reset All Scores</button>
+</form></section>
+<p class="mode"><strong id="mode">Demo mode</strong><span id="modeText">Stored only in this browser until Firebase is configured.</span></p>
+</main><script type="module">const firebaseConfig = {
+  apiKey: "AIzaSyCPp2PzbFGqf0a12CfUB_2gCfQcEiYTVNE",
+  authDomain: "ryder-cup-live-scoring.firebaseapp.com",
+  projectId: "ryder-cup-live-scoring",
+  storageBucket: "ryder-cup-live-scoring.firebasestorage.app",
+  messagingSenderId: "167780696127",
+  appId: "1:167780696127:web:2c7104bd7be96fc86d388a"
+};
+const matchId = "nate-ryder-cup";
+const D={eventName:"Tees to Green Live",course:"Your Golf Course",team1:{name:"Red Team",players:["Red Player 1","Red Player 2","Red Player 3"]},team2:{name:"Blue Team",players:["Blue Player 1","Blue Player 2","Blue Player 3"]},challengeEnabled:true};
+const live=!!(firebaseConfig.apiKey&&firebaseConfig.projectId&&firebaseConfig.appId),$=id=>document.getElementById(id);
+let state={config:structuredClone(D),scores:{}},db,api;
+const fmt=h=>h<=6?"Best 1":h<=12?"Best 2":"All 3";
+const pts=h=>h===6||h===12?2:h===18?3:h>=13?2:1;
+const key=(t,h)=>t+"_"+h;
+const count=(s,f)=>{s=s.map(Number).sort((a,b)=>a-b);return f==="Best 1"?s[0]:f==="Best 2"?s[0]+s[1]:s[0]+s[1]+s[2]};
+function hole(h){let a=state.scores[key("team1",h)],b=state.scores[key("team2",h)],p=pts(h)*(((a?.challenge||b?.challenge)&&state.config.challengeEnabled)?2:1);if(!a||!b)return{a,b,p,w:"Waiting"};let ac=count(a.scores,fmt(h)),bc=count(b.scores,fmt(h));return{a,b,p,ac,bc,w:ac<bc?"team1":bc<ac?"team2":"tie"}}
+function totals(){let a=0,b=0,c=0;for(let h=1;h<=18;h++){let r=hole(h);if(!r.a||!r.b)continue;c++;if(r.w==="team1")a+=r.p;else if(r.w==="team2")b+=r.p;else{a+=r.p/2;b+=r.p/2}}return{a,b,c}}
+function toast(s){$("toast").textContent=s;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1800)}
+function localLoad(){let x=localStorage.getItem("ryder:"+matchId);if(x)state=JSON.parse(x)}
+async function save(){if(live&&db)await api.setDoc(api.doc(db,"matches",matchId),state);else{localStorage.setItem("ryder:"+matchId,JSON.stringify(state));render()}}
+async function connect(){if(!live){localLoad();render();return}try{let A=await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js"),U=await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js"),F=await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js"),app=A.initializeApp(firebaseConfig);db=F.getFirestore(app);await U.signInAnonymously(U.getAuth(app));api=F;let ref=F.doc(db,"matches",matchId);F.onSnapshot(ref,async s=>{if(s.exists())state=s.data();else await F.setDoc(ref,state);render()},e=>{console.error(e);toast("Live connection failed")})}catch(e){console.error(e);localLoad();render();toast("Firebase setup error")}}
+function teamOptions(){let old=$("team").value;$("team").innerHTML=`<option value="team1">${state.config.team1.name}</option><option value="team2">${state.config.team2.name}</option>`;if(old)$("team").value=old}
+function playerInputs(){let t=$("team").value||"team1",r=state.scores[key(t,+$("hole").value)];$("players").innerHTML=state.config[t].players.map((p,i)=>`<label>${p}<input id="p${i}" type="number" inputmode="numeric" min="1" max="20" required value="${r?.scores?.[i]??""}"></label>`).join("");$("challenge").checked=!!r?.challenge;if(r?.by)$("by").value=r.by}
+function setup(){let c=state.config;$("sevent").value=c.eventName;$("scourse").value=c.course;$("steam1").value=c.team1.name;$("steam2").value=c.team2.name;$("schallenge").checked=c.challengeEnabled;$("sp1").innerHTML=c.team1.players.map((p,i)=>`<label>Team 1 Player ${i+1}<input id="s1${i}" value="${p}" required></label>`).join("");$("sp2").innerHTML=c.team2.players.map((p,i)=>`<label>Team 2 Player ${i+1}<input id="s2${i}" value="${p}" required></label>`).join("")}
+function render(){let c=state.config,t=totals();$("event").textContent=c.eventName;$("course").textContent=c.course;$("t1n").textContent=c.team1.name;$("t2n").textContent=c.team2.name;$("t1").textContent=t.a;$("t2").textContent=t.b;$("complete").textContent=t.c+" holes complete";$("status").textContent=t.a===t.b?"Match tied":(t.a>t.b?c.team1.name:c.team2.name)+" leads by "+Math.abs(t.a-t.b);$("rh").textContent=c.team1.name;$("bh").textContent=c.team2.name;teamOptions();playerInputs();setup();$("challenge").closest("label").classList.toggle("hidden",!c.challengeEnabled);$("mode").textContent=live?"Live Firebase mode":"Demo mode";$("modeText").textContent=live?"All connected phones share live scores.":"Stored only in this browser until Firebase is configured.";$("rows").innerHTML=Array.from({length:18},(_,i)=>{let h=i+1,r=hole(h),w=r.w==="team1"?c.team1.name:r.w==="team2"?c.team2.name:r.w==="tie"?"Halved":"Waiting";return`<tr><td>${h}</td><td>${fmt(h)}</td><td>${r.a?r.a.scores.join(", ")+"<br><b>"+r.ac+"</b>":"—"}</td><td>${r.b?r.b.scores.join(", ")+"<br><b>"+r.bc+"</b>":"—"}</td><td>${w}</td><td>${r.p}</td></tr>`}).join("")}
+$("hole").innerHTML=Array.from({length:18},(_,i)=>`<option value="${i+1}">Hole ${i+1}</option>`).join("");
+function update(){let h=+$("hole").value;$("format").textContent=fmt(h);$("points").textContent=pts(h)+" point"+(pts(h)===1?"":"s");playerInputs()}
+$("team").onchange=playerInputs;$("hole").onchange=update;
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".view").forEach(x=>x.classList.add("hidden"));$(b.dataset.view).classList.remove("hidden")});
+$("scoreForm").onsubmit=async e=>{e.preventDefault();let s=[0,1,2].map(i=>+$("p"+i).value),t=$("team").value,h=+$("hole").value;if(s.some(x=>x<1||x>20))return toast("Enter three valid scores");state.scores[key(t,h)]={scores:s,challenge:$("challenge").checked,by:$("by").value.trim(),updatedAt:new Date().toISOString()};await save();toast("Hole "+h+" saved")};
+$("setupForm").onsubmit=async e=>{e.preventDefault();state.config={eventName:$("sevent").value,course:$("scourse").value,team1:{name:$("steam1").value,players:[0,1,2].map(i=>$("s1"+i).value)},team2:{name:$("steam2").value,players:[0,1,2].map(i=>$("s2"+i).value)},challengeEnabled:$("schallenge").checked};await save();toast("Setup saved")};
+$("reset").onclick=async()=>{if(confirm("Delete every submitted score?")){state.scores={};await save();toast("Scores reset")}};
+update();connect();
+</script></body></html>
