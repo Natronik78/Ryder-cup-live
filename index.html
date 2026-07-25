@@ -1,68 +1,504 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#123b72"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f5132">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
 <title>Tees to Green Live</title>
-<style>:root{--navy:#123b72;--blue:#245ca6;--red:#b4232f;--bg:#f4f7fb;--line:#dce3ec;--muted:#667085}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#182230}header{padding:24px max(18px,env(safe-area-inset-left));background:linear-gradient(135deg,#0e315f,#2462ac);color:#fff}header h1{margin:3px 0;font-size:28px}header p{margin:0;opacity:.85}header small{font-weight:900;letter-spacing:.12em}main{max-width:900px;margin:auto;padding:16px}.score{display:grid;grid-template-columns:1fr 1.25fr 1fr;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 7px 24px #102b4b1a}.score>div{padding:16px;text-align:center}.red,.blue{color:#fff}.red{background:var(--red)}.blue{background:var(--navy)}.score span{display:block;font-size:13px;font-weight:900}.score b{font-size:35px}.status{display:flex;flex-direction:column;justify-content:center}.status small{color:var(--muted);margin-top:4px}nav{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:16px 0}button{border:0;border-radius:11px;padding:13px;font-weight:900;cursor:pointer}nav button{background:#e5ebf2}nav .active,.primary{background:var(--blue);color:#fff}.panel{background:#fff;padding:17px;border-radius:18px;box-shadow:0 7px 24px #102b4b14}.hidden{display:none!important}.grid2,.grid3{display:grid;gap:12px}.grid2{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:repeat(3,1fr)}label{display:block;font-size:13px;font-weight:800;margin-bottom:13px;color:#344054}input,select{width:100%;padding:13px;margin-top:6px;border:1px solid var(--line);border-radius:11px;background:#fff;font:inherit}.format{display:flex;align-items:center;gap:12px;padding:13px;background:#edf4ff;border-radius:12px;margin-bottom:14px}.format strong{margin-left:auto}.format small{color:#9a6700}.check{display:flex;align-items:center;gap:8px}.check input{width:auto;margin:0}.primary,.danger{width:100%}.danger{margin-top:10px;background:#fee4e2;color:#912018}.hint,.mode{font-size:12px;color:var(--muted);text-align:center}.mode strong,.mode span{display:block}.table{overflow:auto}table{width:100%;border-collapse:collapse;min-width:580px}th,td{padding:10px 7px;border-bottom:1px solid var(--line);text-align:center;font-size:13px}th{background:#eef3f9}#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#101828;color:#fff;padding:11px 17px;border-radius:10px;opacity:0;z-index:10;transition:.2s}#toast.show{opacity:1}
-@media(max-width:650px){header h1{font-size:23px}.score>div{padding:13px 5px}.score b{font-size:29px}.grid2,.grid3{grid-template-columns:1fr}.panel{padding:14px}nav button{font-size:12px;padding:12px 3px}}</style></head>
+<style>
+:root{
+  --green:#0f5132;--green2:#177245;--gold:#d6a84b;--navy:#15324b;
+  --red:#b4232f;--blue:#245ca6;--bg:#f4f7f5;--card:#fff;--line:#d9e2dc;
+  --text:#17231c;--muted:#66756c;--danger:#b42318
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text)}
+button,input,select{font:inherit}
+button{border:0;border-radius:12px;padding:13px 16px;font-weight:800;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
+header{padding:22px max(18px,env(safe-area-inset-left));background:linear-gradient(135deg,#0b3d27,#197148);color:white}
+header small{font-weight:900;letter-spacing:.11em}
+header h1{margin:4px 0 2px;font-size:28px}
+header p{margin:0;opacity:.85}
+main{max-width:1050px;margin:auto;padding:16px 16px 90px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 8px 26px #15324b12}
+.hero{text-align:center;padding:28px 18px}
+.hero h2{font-size:28px;margin:0 0 8px}
+.hero p{color:var(--muted);margin:0 auto 22px;max-width:620px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:600px;margin:auto}
+.primary{background:var(--green2);color:#fff}
+.secondary{background:#e7efe9;color:var(--green)}
+.danger{background:#fee4e2;color:var(--danger)}
+.gold{background:var(--gold);color:#272018}
+.full{width:100%}
+.hidden{display:none!important}
+.grid2,.grid3,.grid4{display:grid;gap:12px}
+.grid2{grid-template-columns:repeat(2,1fr)}
+.grid3{grid-template-columns:repeat(3,1fr)}
+.grid4{grid-template-columns:repeat(4,1fr)}
+label{display:block;font-size:13px;font-weight:800;color:#34443a;margin-bottom:13px}
+input,select{width:100%;padding:13px;margin-top:6px;border:1px solid var(--line);border-radius:11px;background:#fff;color:var(--text)}
+.section-title{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}
+.section-title h2,.section-title h3{margin:0}
+.pill{display:inline-flex;align-items:center;border-radius:999px;padding:7px 10px;background:#e7efe9;color:var(--green);font-size:12px;font-weight:900}
+.event-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.type-card{border:2px solid var(--line);border-radius:15px;padding:16px;cursor:pointer;background:white}
+.type-card.active{border-color:var(--green2);background:#f0f8f3}
+.type-card h3{margin:0 0 5px}.type-card p{margin:0;color:var(--muted);font-size:13px}
+.team-card{border:1px solid var(--line);border-radius:15px;padding:14px;margin:12px 0;background:#fbfdfb}
+.team-header{display:grid;grid-template-columns:1fr 130px 48px;gap:10px;align-items:end}
+.icon-btn{padding:12px;background:#eef2ef;color:var(--danger)}
+.players{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.topbar{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:14px}
+.code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:900;letter-spacing:.08em}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:14px}
+.tabs button{background:#e7ece8;padding:11px 6px;font-size:12px}
+.tabs button.active{background:var(--green2);color:#fff}
+.scoreboard{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-bottom:14px}
+.score-tile{padding:15px;border-radius:15px;background:#fff;border:1px solid var(--line);text-align:center}
+.score-tile b{display:block;font-size:30px;margin-top:4px}
+.status-box{text-align:center;padding:14px;background:#edf5ef;border-radius:14px;margin-bottom:14px;font-weight:800}
+.score-player{display:grid;grid-template-columns:1fr 115px;gap:10px;align-items:center;margin-bottom:9px}
+.score-player strong{overflow:hidden;text-overflow:ellipsis}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:680px}
+th,td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:center;font-size:13px}
+th{background:#edf2ee;position:sticky;top:0}
+.small{font-size:12px;color:var(--muted)}
+.notice{padding:12px;border-radius:12px;background:#fff7e5;color:#7a4e00;font-size:13px;margin-bottom:12px}
+.success{padding:12px;border-radius:12px;background:#e8f5ec;color:#145c32;font-size:13px;margin-bottom:12px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#122018;color:#fff;padding:12px 18px;border-radius:11px;opacity:0;pointer-events:none;transition:.2s;z-index:99}
+#toast.show{opacity:1}
+footer{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);padding:9px 14px max(9px,env(safe-area-inset-bottom));text-align:center;font-size:12px;color:var(--muted)}
+@media(max-width:720px){
+  header h1{font-size:23px}.actions,.event-type-grid,.grid2,.grid3,.grid4{grid-template-columns:1fr}
+  .players{grid-template-columns:1fr}.team-header{grid-template-columns:1fr 105px 45px}
+  .tabs{grid-template-columns:repeat(2,1fr)}.score-player{grid-template-columns:1fr 100px}
+}
+</style>
+</head>
 <body>
 <div id="toast"></div>
-<header><div><small>EVERY ROUND. EVERY HOLE. LIVE.</small><h1 id="event">Tees to Green Live</h1><p id="course">Loading…</p></div></header>
+<header>
+  <small>EVERY ROUND. EVERY HOLE. LIVE.</small>
+  <h1>Tees to Green Live</h1>
+  <p id="headerSub">Live golf events made simple.</p>
+</header>
+
 <main>
-<section class="score"><div class="red"><span id="t1n">Red Team</span><b id="t1">0</b></div><div class="status"><strong id="status">Match tied</strong><small id="complete">0 holes complete</small></div><div class="blue"><span id="t2n">Blue Team</span><b id="t2">0</b></div></section>
-<nav><button class="active" data-view="entry">Enter Score</button><button data-view="live">Live Match</button><button data-view="setup">Setup</button></nav>
-<section id="entry" class="panel view">
-<form id="scoreForm">
-<div class="grid2"><label>Team<select id="team"></select></label><label>Hole<select id="hole"></select></label></div>
-<div class="format"><span>Format</span><strong id="format">Best 1</strong><small id="points">1 point</small></div>
-<div id="players" class="grid3"></div>
-<label class="check"><input id="challenge" type="checkbox"> Captain's Challenge</label>
-<label>Submitted by<input id="by" maxlength="40" placeholder="Your name" required></label>
-<button class="primary">Save Hole Score</button><p class="hint">Submitting the same team and hole again replaces the earlier score.</p>
-</form></section>
-<section id="live" class="panel view hidden"><div class="table"><table><thead><tr><th>Hole</th><th>Format</th><th id="rh">Red</th><th id="bh">Blue</th><th>Winner</th><th>Pts</th></tr></thead><tbody id="rows"></tbody></table></div></section>
-<section id="setup" class="panel view hidden"><form id="setupForm">
-<label>Event name<input id="sevent" required></label><label>Course<input id="scourse" required></label>
-<div class="grid2"><label>Team 1<input id="steam1" required></label><label>Team 2<input id="steam2" required></label></div>
-<div class="grid2"><div id="sp1"></div><div id="sp2"></div></div>
-<label class="check"><input id="schallenge" type="checkbox"> Enable Captain's Challenge</label>
-<button class="primary">Save Match Setup</button><button id="reset" class="danger" type="button">Reset All Scores</button>
-</form></section>
-<p class="mode"><strong id="mode">Demo mode</strong><span id="modeText">Stored only in this browser until Firebase is configured.</span></p>
-</main><script type="module">const firebaseConfig = {
-  apiKey: "AIzaSyCPp2PzbFGqf0a12CfUB_2gCfQcEiYTVNE",
-  authDomain: "ryder-cup-live-scoring.firebaseapp.com",
-  projectId: "ryder-cup-live-scoring",
-  storageBucket: "ryder-cup-live-scoring.firebasestorage.app",
-  messagingSenderId: "167780696127",
-  appId: "1:167780696127:web:2c7104bd7be96fc86d388a"
+<section id="homeView">
+  <div class="card hero">
+    <h2>Run the round. Share the moment.</h2>
+    <p>Create a Ryder Cup event or a full course tournament, invite golfers with one event code, and watch the leaderboard update live.</p>
+    <div class="actions">
+      <button id="goCreate" class="primary">Create Event</button>
+      <button id="goJoin" class="secondary">Join Event</button>
+    </div>
+  </div>
+  <div id="joinCard" class="card hidden">
+    <div class="section-title"><h2>Join Event</h2><span class="pill">No account needed</span></div>
+    <form id="joinForm">
+      <label>Event code<input id="joinCode" maxlength="8" autocomplete="off" placeholder="Example: A7K9Q2" required></label>
+      <button class="primary full">Open Live Event</button>
+    </form>
+  </div>
+</section>
+
+<section id="createView" class="hidden">
+  <div class="topbar"><button class="secondary" data-home>← Home</button><span class="pill">Create Event</span></div>
+  <form id="createForm">
+    <div class="card">
+      <div class="section-title"><h2>Event Type</h2></div>
+      <div class="event-type-grid">
+        <div class="type-card active" data-type="ryder">
+          <h3>🏆 Ryder Cup</h3>
+          <p>2–4 teams with up to 12 players per team.</p>
+        </div>
+        <div class="type-card" data-type="tournament">
+          <h3>⛳ Course Tournament</h3>
+          <p>Up to 36 teams of four with a live best-ball leaderboard.</p>
+        </div>
+      </div>
+      <input id="eventType" type="hidden" value="ryder">
+    </div>
+
+    <div class="card">
+      <div class="section-title"><h2>Event Details</h2></div>
+      <div class="grid2">
+        <label>Event name<input id="eventName" maxlength="70" placeholder="2026 Ryder Cup" required></label>
+        <label>Course<input id="courseName" maxlength="70" placeholder="Prestwick Golf Club" required></label>
+        <label>Date<input id="eventDate" type="date" required></label>
+        <label>Holes<select id="holes"><option value="18">18 holes</option><option value="9">9 holes</option><option value="36">36 holes</option></select></label>
+      </div>
+      <div id="ryderSettings">
+        <div class="grid2">
+          <label>Number of teams<select id="ryderTeamCount"></select></label>
+          <label>Default players per team<select id="ryderPlayers"></select></label>
+        </div>
+        <div class="notice">Ryder Cup scoring supports 2–4 teams. Each team can have 1–12 named players. You may change each team's roster size separately below.</div>
+      </div>
+      <div id="tournamentSettings" class="hidden">
+        <div class="grid2">
+          <label>Number of teams<select id="tournamentTeamCount"></select></label>
+          <label>Scores counting per hole<select id="bestBallCount"><option value="1">Best 1 score</option><option value="2">Best 2 scores</option><option value="3">Best 3 scores</option><option value="4">All 4 scores</option></select></label>
+        </div>
+        <div class="notice">Course Tournament supports up to 36 teams of four. The leaderboard ranks teams by the lowest cumulative counting score.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><h2>Teams and Players</h2><span id="teamLimit" class="pill">2 teams</span></div>
+      <div id="teamBuilder"></div>
+    </div>
+
+    <div class="card">
+      <button class="primary full">Create Live Event</button>
+      <p class="small" style="text-align:center">A unique event code and shareable link will be generated automatically.</p>
+    </div>
+  </form>
+</section>
+
+<section id="eventView" class="hidden">
+  <div class="topbar">
+    <button class="secondary" data-home>← Home</button>
+    <span class="pill code" id="eventCodePill">------</span>
+  </div>
+  <div class="card">
+    <div class="section-title">
+      <div><h2 id="liveEventName">Event</h2><div id="liveCourse" class="small"></div></div>
+      <button id="shareEvent" class="gold">Share</button>
+    </div>
+    <div id="eventMeta" class="small"></div>
+  </div>
+
+  <div class="tabs">
+    <button class="active" data-tab="leaderboard">Leaderboard</button>
+    <button data-tab="score">Enter Score</button>
+    <button data-tab="rosters">Rosters</button>
+    <button data-tab="director">Director</button>
+  </div>
+
+  <section id="leaderboardTab" class="tab-panel">
+    <div id="leaderboardSummary"></div>
+    <div class="card table-wrap"><table><thead id="leaderHead"></thead><tbody id="leaderBody"></tbody></table></div>
+  </section>
+
+  <section id="scoreTab" class="tab-panel hidden">
+    <div class="card">
+      <div class="section-title"><h2>Enter Hole Score</h2><span id="scoreFormat" class="pill"></span></div>
+      <form id="scoreForm">
+        <div class="grid2">
+          <label>Team<select id="scoreTeam"></select></label>
+          <label>Hole<select id="scoreHole"></select></label>
+        </div>
+        <div id="scorePlayers"></div>
+        <label>Submitted by<input id="submittedBy" maxlength="40" placeholder="Your name" required></label>
+        <button class="primary full">Save Hole Score</button>
+      </form>
+    </div>
+  </section>
+
+  <section id="rostersTab" class="tab-panel hidden">
+    <div id="rosterDisplay"></div>
+  </section>
+
+  <section id="directorTab" class="tab-panel hidden">
+    <div class="card">
+      <h2>Event Director</h2>
+      <p class="small">Use this area to monitor scoring progress and manage the event.</p>
+      <div id="progressSummary" class="success"></div>
+      <button id="copyLink" class="secondary full">Copy Event Link</button>
+      <button id="resetScores" class="danger full" style="margin-top:10px">Reset All Scores</button>
+    </div>
+  </section>
+</section>
+</main>
+
+<footer><strong id="mode">Connecting…</strong> · Tees to Green Live</footer>
+
+<script type="module">
+const firebaseConfig={
+  apiKey:"AIzaSyCPp2PzbFGqf0a12CfUB_2gCfQcEiYTVNE",
+  authDomain:"ryder-cup-live-scoring.firebaseapp.com",
+  projectId:"ryder-cup-live-scoring",
+  storageBucket:"ryder-cup-live-scoring.firebasestorage.app",
+  messagingSenderId:"167780696127",
+  appId:"1:167780696127:web:2c7104bd7be96fc86d388a"
 };
-const matchId = "nate-ryder-cup";
-const D={eventName:"Tees to Green Live",course:"Your Golf Course",team1:{name:"Red Team",players:["Red Player 1","Red Player 2","Red Player 3"]},team2:{name:"Blue Team",players:["Blue Player 1","Blue Player 2","Blue Player 3"]},challengeEnabled:true};
-const live=!!(firebaseConfig.apiKey&&firebaseConfig.projectId&&firebaseConfig.appId),$=id=>document.getElementById(id);
-let state={config:structuredClone(D),scores:{}},db,api;
-const fmt=h=>h<=6?"Best 1":h<=12?"Best 2":"All 3";
-const pts=h=>h===6||h===12?2:h===18?3:h>=13?2:1;
-const key=(t,h)=>t+"_"+h;
-const count=(s,f)=>{s=s.map(Number).sort((a,b)=>a-b);return f==="Best 1"?s[0]:f==="Best 2"?s[0]+s[1]:s[0]+s[1]+s[2]};
-function hole(h){let a=state.scores[key("team1",h)],b=state.scores[key("team2",h)],p=pts(h)*(((a?.challenge||b?.challenge)&&state.config.challengeEnabled)?2:1);if(!a||!b)return{a,b,p,w:"Waiting"};let ac=count(a.scores,fmt(h)),bc=count(b.scores,fmt(h));return{a,b,p,ac,bc,w:ac<bc?"team1":bc<ac?"team2":"tie"}}
-function totals(){let a=0,b=0,c=0;for(let h=1;h<=18;h++){let r=hole(h);if(!r.a||!r.b)continue;c++;if(r.w==="team1")a+=r.p;else if(r.w==="team2")b+=r.p;else{a+=r.p/2;b+=r.p/2}}return{a,b,c}}
-function toast(s){$("toast").textContent=s;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1800)}
-function localLoad(){let x=localStorage.getItem("ryder:"+matchId);if(x)state=JSON.parse(x)}
-async function save(){if(live&&db)await api.setDoc(api.doc(db,"matches",matchId),state);else{localStorage.setItem("ryder:"+matchId,JSON.stringify(state));render()}}
-async function connect(){if(!live){localLoad();render();return}try{let A=await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js"),U=await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js"),F=await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js"),app=A.initializeApp(firebaseConfig);db=F.getFirestore(app);await U.signInAnonymously(U.getAuth(app));api=F;let ref=F.doc(db,"matches",matchId);F.onSnapshot(ref,async s=>{if(s.exists())state=s.data();else await F.setDoc(ref,state);render()},e=>{console.error(e);toast("Live connection failed")})}catch(e){console.error(e);localLoad();render();toast("Firebase setup error")}}
-function teamOptions(){let old=$("team").value;$("team").innerHTML=`<option value="team1">${state.config.team1.name}</option><option value="team2">${state.config.team2.name}</option>`;if(old)$("team").value=old}
-function playerInputs(){let t=$("team").value||"team1",r=state.scores[key(t,+$("hole").value)];$("players").innerHTML=state.config[t].players.map((p,i)=>`<label>${p}<input id="p${i}" type="number" inputmode="numeric" min="1" max="20" required value="${r?.scores?.[i]??""}"></label>`).join("");$("challenge").checked=!!r?.challenge;if(r?.by)$("by").value=r.by}
-function setup(){let c=state.config;$("sevent").value=c.eventName;$("scourse").value=c.course;$("steam1").value=c.team1.name;$("steam2").value=c.team2.name;$("schallenge").checked=c.challengeEnabled;$("sp1").innerHTML=c.team1.players.map((p,i)=>`<label>Team 1 Player ${i+1}<input id="s1${i}" value="${p}" required></label>`).join("");$("sp2").innerHTML=c.team2.players.map((p,i)=>`<label>Team 2 Player ${i+1}<input id="s2${i}" value="${p}" required></label>`).join("")}
-function render(){let c=state.config,t=totals();$("event").textContent=c.eventName;$("course").textContent=c.course;$("t1n").textContent=c.team1.name;$("t2n").textContent=c.team2.name;$("t1").textContent=t.a;$("t2").textContent=t.b;$("complete").textContent=t.c+" holes complete";$("status").textContent=t.a===t.b?"Match tied":(t.a>t.b?c.team1.name:c.team2.name)+" leads by "+Math.abs(t.a-t.b);$("rh").textContent=c.team1.name;$("bh").textContent=c.team2.name;teamOptions();playerInputs();setup();$("challenge").closest("label").classList.toggle("hidden",!c.challengeEnabled);$("mode").textContent=live?"Live Firebase mode":"Demo mode";$("modeText").textContent=live?"All connected phones share live scores.":"Stored only in this browser until Firebase is configured.";$("rows").innerHTML=Array.from({length:18},(_,i)=>{let h=i+1,r=hole(h),w=r.w==="team1"?c.team1.name:r.w==="team2"?c.team2.name:r.w==="tie"?"Halved":"Waiting";return`<tr><td>${h}</td><td>${fmt(h)}</td><td>${r.a?r.a.scores.join(", ")+"<br><b>"+r.ac+"</b>":"—"}</td><td>${r.b?r.b.scores.join(", ")+"<br><b>"+r.bc+"</b>":"—"}</td><td>${w}</td><td>${r.p}</td></tr>`}).join("")}
-$("hole").innerHTML=Array.from({length:18},(_,i)=>`<option value="${i+1}">Hole ${i+1}</option>`).join("");
-function update(){let h=+$("hole").value;$("format").textContent=fmt(h);$("points").textContent=pts(h)+" point"+(pts(h)===1?"":"s");playerInputs()}
-$("team").onchange=playerInputs;$("hole").onchange=update;
-document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".view").forEach(x=>x.classList.add("hidden"));$(b.dataset.view).classList.remove("hidden")});
-$("scoreForm").onsubmit=async e=>{e.preventDefault();let s=[0,1,2].map(i=>+$("p"+i).value),t=$("team").value,h=+$("hole").value;if(s.some(x=>x<1||x>20))return toast("Enter three valid scores");state.scores[key(t,h)]={scores:s,challenge:$("challenge").checked,by:$("by").value.trim(),updatedAt:new Date().toISOString()};await save();toast("Hole "+h+" saved")};
-$("setupForm").onsubmit=async e=>{e.preventDefault();state.config={eventName:$("sevent").value,course:$("scourse").value,team1:{name:$("steam1").value,players:[0,1,2].map(i=>$("s1"+i).value)},team2:{name:$("steam2").value,players:[0,1,2].map(i=>$("s2"+i).value)},challengeEnabled:$("schallenge").checked};await save();toast("Setup saved")};
-$("reset").onclick=async()=>{if(confirm("Delete every submitted score?")){state.scores={};await save();toast("Scores reset")}};
-update();connect();
-</script></body></html>
+
+const $=id=>document.getElementById(id);
+const clone=x=>JSON.parse(JSON.stringify(x));
+let db=null,F=null,currentEvent=null,currentCode=null,unsubscribe=null;
+let draftTeams=[];
+
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
+function toast(msg){$("toast").textContent=msg;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),2000)}
+function show(id){["homeView","createView","eventView"].forEach(x=>$(x).classList.toggle("hidden",x!==id));window.scrollTo({top:0,behavior:"smooth"})}
+function makeCode(){const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";return Array.from({length:6},()=>chars[Math.floor(Math.random()*chars.length)]).join("")}
+function today(){return new Date().toISOString().slice(0,10)}
+function eventUrl(code){return location.origin+location.pathname+"?event="+encodeURIComponent(code)}
+function setQuery(code){const u=new URL(location.href);code?u.searchParams.set("event",code):u.searchParams.delete("event");history.pushState({}, "", u)}
+function formatDate(v){if(!v)return"";return new Date(v+"T12:00:00").toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"})}
+
+function buildSelects(){
+  $("ryderTeamCount").innerHTML=[2,3,4].map(n=>`<option value="${n}">${n} teams</option>`).join("");
+  $("ryderPlayers").innerHTML=Array.from({length:12},(_,i)=>i+1).map(n=>`<option value="${n}" ${n===3?"selected":""}>${n}</option>`).join("");
+  $("tournamentTeamCount").innerHTML=Array.from({length:36},(_,i)=>i+1).map(n=>`<option value="${n}" ${n===12?"selected":""}>${n} teams</option>`).join("");
+  $("scoreHole").innerHTML=Array.from({length:36},(_,i)=>`<option value="${i+1}">Hole ${i+1}</option>`).join("");
+}
+function defaultTeam(i,count){
+  const names=["Red Team","Blue Team","Green Team","Gold Team"];
+  return {id:"team"+(i+1),name:names[i]||`Team ${i+1}`,playerCount:count,players:Array.from({length:count},(_,p)=>({id:`p${i+1}_${p+1}`,name:""}))}
+}
+function syncDraftTeams(){
+  const type=$("eventType").value;
+  const count=type==="ryder"?+$("ryderTeamCount").value:+$("tournamentTeamCount").value;
+  const players=type==="ryder"?+$("ryderPlayers").value:4;
+  while(draftTeams.length<count)draftTeams.push(defaultTeam(draftTeams.length,players));
+  draftTeams=draftTeams.slice(0,count);
+  draftTeams.forEach((t,i)=>{
+    const target=type==="tournament"?4:(t.playerCount||players);
+    if(type==="tournament")t.playerCount=4;
+    while(t.players.length<target)t.players.push({id:`p${i+1}_${t.players.length+1}`,name:""});
+    t.players=t.players.slice(0,target);
+  });
+  renderTeamBuilder();
+}
+function renderTeamBuilder(){
+  const type=$("eventType").value;
+  $("teamLimit").textContent=`${draftTeams.length} team${draftTeams.length===1?"":"s"}`;
+  $("teamBuilder").innerHTML=draftTeams.map((t,i)=>`
+    <div class="team-card" data-team="${i}">
+      <div class="team-header">
+        <label>Team name<input class="team-name" data-i="${i}" value="${esc(t.name)}" maxlength="40" required></label>
+        <label>Players<select class="player-count" data-i="${i}" ${type==="tournament"?"disabled":""}>
+          ${Array.from({length:12},(_,k)=>k+1).map(n=>`<option value="${n}" ${n===t.playerCount?"selected":""}>${n}</option>`).join("")}
+        </select></label>
+        <button type="button" class="icon-btn remove-team" data-i="${i}" title="Remove team" ${type==="ryder"&&draftTeams.length<=2?"disabled":type==="tournament"&&draftTeams.length<=1?"disabled":""}>×</button>
+      </div>
+      <div class="players">
+        ${t.players.map((p,j)=>`<label>Player name<input class="player-name" data-i="${i}" data-j="${j}" value="${esc(p.name)}" placeholder="Enter name" maxlength="40" required></label>`).join("")}
+      </div>
+    </div>`).join("");
+
+  document.querySelectorAll(".team-name").forEach(el=>el.oninput=()=>draftTeams[+el.dataset.i].name=el.value);
+  document.querySelectorAll(".player-name").forEach(el=>el.oninput=()=>draftTeams[+el.dataset.i].players[+el.dataset.j].name=el.value);
+  document.querySelectorAll(".player-count").forEach(el=>el.onchange=()=>{
+    const i=+el.dataset.i,n=+el.value,t=draftTeams[i];t.playerCount=n;
+    while(t.players.length<n)t.players.push({id:`p${i+1}_${t.players.length+1}`,name:""});
+    t.players=t.players.slice(0,n);renderTeamBuilder();
+  });
+  document.querySelectorAll(".remove-team").forEach(el=>el.onclick=()=>{
+    draftTeams.splice(+el.dataset.i,1);draftTeams.forEach((t,i)=>t.id="team"+(i+1));renderTeamBuilder();
+  });
+}
+function selectType(type){
+  $("eventType").value=type;
+  document.querySelectorAll(".type-card").forEach(x=>x.classList.toggle("active",x.dataset.type===type));
+  $("ryderSettings").classList.toggle("hidden",type!=="ryder");
+  $("tournamentSettings").classList.toggle("hidden",type!=="tournament");
+  $("holes").querySelector('option[value="36"]').disabled=type==="ryder";
+  if(type==="ryder"&&+$("holes").value===36)$("holes").value=18;
+  draftTeams=[];syncDraftTeams();
+}
+
+async function connect(){
+  try{
+    const A=await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js");
+    const U=await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js");
+    F=await import("https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js");
+    const app=A.initializeApp(firebaseConfig);db=F.getFirestore(app);
+    await U.signInAnonymously(U.getAuth(app));
+    $("mode").textContent="Live Firebase mode";
+    const code=new URL(location.href).searchParams.get("event");
+    if(code)openEvent(code.toUpperCase());
+  }catch(e){console.error(e);$("mode").textContent="Firebase connection failed";toast("Could not connect to Firebase")}
+}
+
+async function createEvent(){
+  const type=$("eventType").value;
+  const code=makeCode();
+  const cleanTeams=draftTeams.map((t,i)=>({
+    id:"team"+(i+1),
+    name:t.name.trim(),
+    players:t.players.map((p,j)=>({id:`team${i+1}_p${j+1}`,name:p.name.trim()}))
+  }));
+  const event={
+    version:1,
+    code,
+    type,
+    name:$("eventName").value.trim(),
+    course:$("courseName").value.trim(),
+    date:$("eventDate").value,
+    holes:+$("holes").value,
+    settings:type==="ryder"
+      ?{mode:"multiTeamRyder",segments:[{from:1,to:6,count:1},{from:7,to:12,count:2},{from:13,to:+$("holes").value,count:"all"}]}
+      :{mode:"bestBall",count:+$("bestBallCount").value},
+    teams:cleanTeams,
+    scores:{},
+    createdAt:new Date().toISOString(),
+    updatedAt:new Date().toISOString()
+  };
+  await F.setDoc(F.doc(db,"events",code),event);
+  setQuery(code);openEvent(code);toast("Live event created");
+}
+async function openEvent(code){
+  if(!db)return toast("Still connecting");
+  if(unsubscribe)unsubscribe();
+  currentCode=code;
+  const ref=F.doc(db,"events",code);
+  unsubscribe=F.onSnapshot(ref,snap=>{
+    if(!snap.exists()){toast("Event code not found");show("homeView");return}
+    currentEvent=snap.data();renderEvent();show("eventView");
+  },e=>{console.error(e);toast("Unable to open event")});
+}
+function countingNumber(event,hole){
+  if(event.type==="tournament")return event.settings.count;
+  const seg=event.settings.segments.find(s=>hole>=s.from&&hole<=s.to);
+  return seg?.count==="all"?"all":(seg?.count||1);
+}
+function teamHole(teamId,hole){return currentEvent.scores?.[`${teamId}_${hole}`]||null}
+function countingTotal(scores,count){
+  const vals=scores.map(Number).filter(n=>Number.isFinite(n)&&n>0).sort((a,b)=>a-b);
+  if(!vals.length)return null;
+  const n=count==="all"?vals.length:Math.min(+count,vals.length);
+  return vals.slice(0,n).reduce((a,b)=>a+b,0);
+}
+function ryderHoleResult(hole){
+  const count=countingNumber(currentEvent,hole);
+  const rows=currentEvent.teams.map(t=>{
+    const entry=teamHole(t.id,hole);return {team:t,entry,total:entry?countingTotal(entry.scores,count):null}
+  });
+  if(rows.some(r=>r.total===null))return {complete:false,rows,winners:[]};
+  const best=Math.min(...rows.map(r=>r.total));
+  return {complete:true,rows,winners:rows.filter(r=>r.total===best).map(r=>r.team.id)};
+}
+function ryderPoints(){
+  const pts=Object.fromEntries(currentEvent.teams.map(t=>[t.id,0]));
+  let complete=0;
+  for(let h=1;h<=currentEvent.holes;h++){
+    const r=ryderHoleResult(h);if(!r.complete)continue;complete++;
+    const share=1/r.winners.length;r.winners.forEach(id=>pts[id]+=share);
+  }
+  return {pts,complete};
+}
+function tournamentTotals(){
+  return currentEvent.teams.map(t=>{
+    let total=0,complete=0;
+    for(let h=1;h<=currentEvent.holes;h++){
+      const e=teamHole(t.id,h);if(!e)continue;
+      const v=countingTotal(e.scores,currentEvent.settings.count);if(v!==null){total+=v;complete++}
+    }
+    return {team:t,total,complete};
+  }).sort((a,b)=>b.complete-a.complete||a.total-b.total);
+}
+function renderEvent(){
+  const e=currentEvent;
+  $("eventCodePill").textContent=e.code;
+  $("liveEventName").textContent=e.name;
+  $("liveCourse").textContent=`${e.course} · ${formatDate(e.date)}`;
+  $("eventMeta").textContent=`${e.type==="ryder"?"Ryder Cup":"Course Tournament"} · ${e.teams.length} teams · ${e.holes} holes`;
+  $("headerSub").textContent=e.name;
+  $("scoreHole").innerHTML=Array.from({length:e.holes},(_,i)=>`<option value="${i+1}">Hole ${i+1}</option>`).join("");
+  $("scoreTeam").innerHTML=e.teams.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join("");
+  renderScorePlayers();renderRosters();renderLeaderboard();renderProgress();
+}
+function renderScorePlayers(){
+  if(!currentEvent)return;
+  const team=currentEvent.teams.find(t=>t.id===$("scoreTeam").value)||currentEvent.teams[0];
+  const hole=+$("scoreHole").value||1;
+  const entry=teamHole(team.id,hole);
+  const count=countingNumber(currentEvent,hole);
+  $("scoreFormat").textContent=currentEvent.type==="tournament"
+    ?`Best ${count} score${count===1?"":"s"}`
+    :(count==="all"?"All scores count":`Best ${count}`);
+  $("scorePlayers").innerHTML=team.players.map((p,i)=>`
+    <div class="score-player"><strong>${esc(p.name)}</strong>
+      <input id="score_${i}" type="number" inputmode="numeric" min="1" max="20" value="${entry?.scores?.[i]??""}" required>
+    </div>`).join("");
+  if(entry?.submittedBy)$("submittedBy").value=entry.submittedBy;
+}
+function renderRosters(){
+  $("rosterDisplay").innerHTML=currentEvent.teams.map(t=>`
+    <div class="card"><div class="section-title"><h3>${esc(t.name)}</h3><span class="pill">${t.players.length} players</span></div>
+    <div class="grid3">${t.players.map(p=>`<div>${esc(p.name)}</div>`).join("")}</div></div>`).join("");
+}
+function renderLeaderboard(){
+  if(currentEvent.type==="ryder"){
+    const {pts,complete}=ryderPoints();
+    const sorted=currentEvent.teams.slice().sort((a,b)=>pts[b.id]-pts[a.id]);
+    $("leaderboardSummary").innerHTML=`<div class="scoreboard">${sorted.map(t=>`<div class="score-tile"><span>${esc(t.name)}</span><b>${pts[t.id].toFixed(pts[t.id]%1?1:0)}</b><small>points</small></div>`).join("")}</div>
+      <div class="status-box">${complete} of ${currentEvent.holes} holes complete</div>`;
+    $("leaderHead").innerHTML=`<tr><th>Hole</th><th>Counting</th>${currentEvent.teams.map(t=>`<th>${esc(t.name)}</th>`).join("")}<th>Winner</th></tr>`;
+    $("leaderBody").innerHTML=Array.from({length:currentEvent.holes},(_,i)=>{
+      const h=i+1,r=ryderHoleResult(h),count=countingNumber(currentEvent,h);
+      const win=r.complete?r.winners.map(id=>esc(currentEvent.teams.find(t=>t.id===id).name)).join(" / "):"Waiting";
+      return `<tr><td>${h}</td><td>${count==="all"?"All":`Best ${count}`}</td>${r.rows.map(x=>`<td>${x.total??"—"}</td>`).join("")}<td>${win}</td></tr>`;
+    }).join("");
+  }else{
+    const rows=tournamentTotals();
+    $("leaderboardSummary").innerHTML=`<div class="status-box">${rows.filter(r=>r.complete===currentEvent.holes).length} teams finished · Best ${currentEvent.settings.count} score${currentEvent.settings.count===1?"":"s"} count per hole</div>`;
+    $("leaderHead").innerHTML="<tr><th>Place</th><th>Team</th><th>Holes</th><th>Total</th></tr>";
+    $("leaderBody").innerHTML=rows.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.team.name)}</td><td>${r.complete}</td><td>${r.complete?r.total:"—"}</td></tr>`).join("");
+  }
+}
+function renderProgress(){
+  const submitted=Object.keys(currentEvent.scores||{}).length;
+  const possible=currentEvent.teams.length*currentEvent.holes;
+  $("progressSummary").textContent=`${submitted} of ${possible} team-hole scorecards submitted (${Math.round(submitted/possible*100)||0}%).`;
+}
+
+document.querySelectorAll("[data-home]").forEach(b=>b.onclick=()=>{setQuery(null);show("homeView");$("headerSub").textContent="Live golf events made simple."});
+$("goCreate").onclick=()=>show("createView");
+$("goJoin").onclick=()=>$("joinCard").classList.toggle("hidden");
+$("eventDate").value=today();
+document.querySelectorAll(".type-card").forEach(c=>c.onclick=()=>selectType(c.dataset.type));
+$("ryderTeamCount").onchange=syncDraftTeams;
+$("ryderPlayers").onchange=()=>{draftTeams.forEach(t=>{t.playerCount=+$("ryderPlayers").value});syncDraftTeams()};
+$("tournamentTeamCount").onchange=syncDraftTeams;
+$("joinForm").onsubmit=e=>{e.preventDefault();const c=$("joinCode").value.trim().toUpperCase();if(c){setQuery(c);openEvent(c)}};
+$("createForm").onsubmit=async e=>{
+  e.preventDefault();
+  if(!db)return toast("Firebase is not connected yet");
+  if(draftTeams.some(t=>!t.name.trim()||t.players.some(p=>!p.name.trim())))return toast("Enter every team and player name");
+  try{await createEvent()}catch(err){console.error(err);toast("Event creation failed")}
+};
+document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x===b));
+  document.querySelectorAll(".tab-panel").forEach(x=>x.classList.add("hidden"));
+  $(b.dataset.tab+"Tab").classList.remove("hidden");
+});
+$("scoreTeam").onchange=renderScorePlayers;$("scoreHole").onchange=renderScorePlayers;
+$("scoreForm").onsubmit=async e=>{
+  e.preventDefault();
+  const team=currentEvent.teams.find(t=>t.id===$("scoreTeam").value),hole=+$("scoreHole").value;
+  const scores=team.players.map((_,i)=>+$("score_"+i).value);
+  if(scores.some(n=>n<1||n>20))return toast("Enter a valid score from 1 to 20 for every player");
+  const updated=clone(currentEvent);
+  updated.scores=updated.scores||{};
+  updated.scores[`${team.id}_${hole}`]={scores,submittedBy:$("submittedBy").value.trim(),updatedAt:new Date().toISOString()};
+  updated.updatedAt=new Date().toISOString();
+  await F.setDoc(F.doc(db,"events",currentCode),updated);
+  toast(`Hole ${hole} saved for ${team.name}`);
+};
+async function share(){
+  const url=eventUrl(currentCode);
+  if(navigator.share){try{await navigator.share({title:currentEvent.name,text:`Join ${currentEvent.name} with code ${currentCode}`,url});return}catch{}}
+  await navigator.clipboard.writeText(url);toast("Event link copied");
+}
+$("shareEvent").onclick=share;$("copyLink").onclick=share;
+$("resetScores").onclick=async()=>{
+  if(!confirm("Delete every submitted score for this event?"))return;
+  const updated=clone(currentEvent);updated.scores={};updated.updatedAt=new Date().toISOString();
+  await F.setDoc(F.doc(db,"events",currentCode),updated);toast("All scores reset");
+};
+window.addEventListener("popstate",()=>{const c=new URL(location.href).searchParams.get("event");c?openEvent(c.toUpperCase()):show("homeView")});
+
+buildSelects();selectType("ryder");connect();
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>

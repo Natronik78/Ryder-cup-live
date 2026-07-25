@@ -1,0 +1,9 @@
+{
+  "name": "Tees to Green Live",
+  "short_name": "Tees to Green",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f4f7f5",
+  "theme_color": "#0f5132",
+  "description": "Live Ryder Cup and course tournament scoring."
+}
